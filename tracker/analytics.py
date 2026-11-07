@@ -1,5 +1,6 @@
 from tracker.database import db_session
 
+
 def get_dashboard_stats():
     with db_session() as connection:
         stats = connection.execute("""

@@ -1,7 +1,6 @@
 
 from tracker.database import db_session
 
-
 # Allowed application statuses
 VALID_STATUSES = [
     "Applied",
