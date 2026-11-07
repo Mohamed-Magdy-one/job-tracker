@@ -4,6 +4,10 @@
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+**Live demo: https://magdy-job-tracker.streamlit.app/**
+
+The public demo is open to everyone and uses sample data, so changes you make there are not kept.
+
 A web app for tracking job and internship applications in one place: where you applied, what stage each
 application is at, when your interviews are, and how your job search is going overall. Everything is stored in a
 single local SQLite database, with no account or cloud service needed.
