@@ -43,13 +43,6 @@ if 'view_details' not in st.session_state:
     st.session_state.view_details = None
 
 # --- CLEAN MODERN CSS ---
-try:  # active theme ("light" / "dark"), so card colours match it
-    IS_DARK = st.context.theme.type == "dark"
-except Exception:
-    IS_DARK = False
-CARD_BG = "#171C28" if IS_DARK else "#FFFFFF"
-CARD_BORDER = "#262D3D" if IS_DARK else "#E3E6F0"
-
 st.markdown("""
 <style>
     .block-container { padding-top: 2.5rem; max-width: 1280px; }
@@ -57,18 +50,23 @@ st.markdown("""
     .subtitle { opacity: 0.65; font-size: 15px; margin-bottom: 22px; }
     .section-header { font-size: 18px; font-weight: 700; margin: 18px 0 12px; }
 
+    /* neutral until the page detects its real theme (see THEME_SYNC_JS), then explicit colours */
     [data-testid="stMetric"], div[data-testid="stExpander"] {
-        background: CARD_BG;
-        border: 1px solid CARD_BORDER;
+        background: rgba(128, 128, 128, 0.08);
+        border: 1px solid rgba(128, 128, 128, 0.25);
         border-radius: 12px;
     }
+    html[data-card-theme="light"] [data-testid="stMetric"],
+    html[data-card-theme="light"] div[data-testid="stExpander"] { background: #FFFFFF; border-color: #E3E6F0; }
+    html[data-card-theme="dark"] [data-testid="stMetric"],
+    html[data-card-theme="dark"] div[data-testid="stExpander"] { background: #171C28; border-color: #262D3D; }
     [data-testid="stMetric"] { padding: 16px 20px; }
     [data-testid="stMetricValue"] { font-weight: 700; }
     div[data-testid="stExpander"] { margin-bottom: 10px; }
     div[data-testid="stExpander"] p { font-size: 14px; font-weight: 600; }
     .stButton > button, .stDownloadButton > button { font-weight: 600; }
 </style>
-""".replace("CARD_BG", CARD_BG).replace("CARD_BORDER", CARD_BORDER), unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Live thousands separators in every "Salary" box: 90000 -> 90,000 while typing.
 # Runs inside the page itself (installed once), so it survives Streamlit reruns.
@@ -95,15 +93,37 @@ SALARY_FORMATTER_JS = r"""
 })();
 """
 
-if "unsafe_allow_javascript" in inspect.signature(st.html).parameters:
-    st.html("<script>" + SALARY_FORMATTER_JS + "</script>", unsafe_allow_javascript=True)
-else:  # older Streamlit: install the same script into the page from a hidden iframe
-    import streamlit.components.v1 as components
+THEME_SYNC_JS = r"""
+(function () {
+  if (window.__themeSync) return; window.__themeSync = true;
+  function sync() {
+    const app = document.querySelector('.stApp');
+    const rgb = app && getComputedStyle(app).backgroundColor.match(/\d+/g);
+    if (!rgb) return;
+    const luminance = 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2];
+    document.documentElement.dataset.cardTheme = luminance < 128 ? 'dark' : 'light';
+  }
+  sync();
+  setInterval(sync, 300);
+})();
+"""
 
-    components.html(
-        "<script>const t = window.parent.document.createElement('script');"
-        "t.textContent = " + json.dumps(SALARY_FORMATTER_JS) + ";"
-        "window.parent.document.head.appendChild(t);</script>", height=0)
+
+def run_js(code):
+    """Run JavaScript inside the app page (the Streamlit API for this differs between versions)."""
+    if "unsafe_allow_javascript" in inspect.signature(st.html).parameters:
+        st.html("<script>" + code + "</script>", unsafe_allow_javascript=True)
+    else:  # older Streamlit: install the same script into the page from a hidden iframe
+        import streamlit.components.v1 as components
+
+        components.html(
+            "<script>const t = window.parent.document.createElement('script');"
+            "t.textContent = " + json.dumps(code) + ";"
+            "window.parent.document.head.appendChild(t);</script>", height=0)
+
+
+run_js(SALARY_FORMATTER_JS)
+run_js(THEME_SYNC_JS)
 
 # --- SIDEBAR ---
 with st.sidebar:
