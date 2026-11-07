@@ -1,0 +1,27 @@
+# Two themes: Streamlit follows the system setting and lets the user switch
+# from the menu (top-right) -> Settings -> Choose app theme.
+[theme]
+baseRadius = "large"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap, sans-serif"
+
+[theme.light]
+primaryColor = "#4F46E5"
+backgroundColor = "#F6F7FB"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#1B2033"
+borderColor = "#E3E6F0"
+
+[theme.light.sidebar]
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F1F3F9"
+
+[theme.dark]
+primaryColor = "#8E8CF7"
+backgroundColor = "#0F131C"
+secondaryBackgroundColor = "#171C28"
+textColor = "#E6E9F2"
+borderColor = "#262D3D"
+
+[theme.dark.sidebar]
+backgroundColor = "#0B0E15"
+secondaryBackgroundColor = "#141926"
