@@ -1,0 +1,40 @@
+name: Keep Streamlit App Alive
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  wake-up:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Playwright
+        run: |
+          pip install playwright
+          playwright install chromium
+
+      - name: Visit and Wake App
+        run: |
+          python - << 'EOF'
+          from playwright.sync_api import sync_playwright
+
+          URL = "https://magdy-job-tracker.streamlit.app/"
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              page = browser.new_page()
+              page.goto(URL, wait_until="domcontentloaded", timeout=60000)
+              page.wait_for_timeout(8000)
+
+              wake_btn = page.locator("button:has-text('get this app back up')")
+              if wake_btn.count() > 0:
+                  print("App was asleep. Waking it up...")
+                  wake_btn.first.click()
+                  page.wait_for_timeout(20000)
+                  print("App is awake now!")
+              else:
+                  print("App is already awake!")
+
+              browser.close()
+          EOF
